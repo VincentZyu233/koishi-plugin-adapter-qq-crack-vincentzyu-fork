@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isCurrentPlugin" class="panel">
+  <div class="panel">
     <div class="header">
       <div><h3>QQ 指令面板</h3><p>只会更新由本插件创建的面板。</p></div>
       <k-button @click="load" :disabled="loading">刷新</k-button>
@@ -22,12 +22,10 @@
 
 <script setup lang="ts">
 import { send } from '@koishijs/client'
-import { computed, inject, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface Command { name: string, description: string, reason?: string, selected: boolean }
 interface State { preference: { scopes: Array<'c2c' | 'group'> }, commands: Command[], menu: { menu?: unknown }, mode: string }
-const local: any = inject('manager.settings.local')
-const isCurrentPlugin = computed(() => (local?.value?.name || '').includes('adapter-qq-crack-vincentzyu-fork'))
 const bots = ref<Array<{ id: string, name: string }>>([])
 const botId = ref('')
 const state = ref<State>()
