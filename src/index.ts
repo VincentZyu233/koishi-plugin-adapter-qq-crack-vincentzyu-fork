@@ -10,6 +10,8 @@ export * from './logger';
 export * from './message';
 export * from './utils';
 export * from './ws';
+export * from './stream-v2';
+export * from './command-panel';
 
 export const name = 'adapter-qq-crack';
 export const reusable = true;

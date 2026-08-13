@@ -99,8 +99,112 @@ export enum Intents
 
 export enum AutoStreamText
 {
-  私聊 = 1 << 0,
-  群聊 = 1 << 1,
+  私聊官方V2 = 1 << 0,
+  私聊旧版兼容 = 1 << 1,
+  群聊旧版兼容 = 1 << 2,
+}
+
+export type StreamDefaultBehavior = 'normal' | 'instant' | 'simulate';
+
+export interface StreamMessageRequest
+{
+  input_mode?: 'append' | 'replace';
+  input_state?: 1 | 10;
+  content_type?: 'text' | 'markdown';
+  content_raw?: string;
+  event_id?: string;
+  msg_id?: string;
+  msg_seq?: number;
+  index?: number;
+  stream_msg_id?: string;
+  is_wakeup?: boolean;
+}
+
+export interface StreamMessageResponse extends Message.SendResponse
+{
+  remain_msg_len?: number;
+}
+
+export interface CommandPanelItem
+{
+  name: string;
+  desc: string;
+  type: 'command' | 'link';
+  only_admin?: boolean;
+  link?: string;
+}
+
+export interface CommandPanel
+{
+  items: CommandPanelItem[];
+  remark?: string;
+  version?: number;
+}
+
+export interface CommandPanelRecord
+{
+  panel_id: string;
+  scope: 'c2c' | 'group' | 'channel' | 'dm';
+  target_type: 'all' | 'specific';
+  panel: CommandPanel;
+  created_at: string;
+  updated_at: string;
+  version: number;
+  user_openids?: string[];
+  group_openids?: string[];
+}
+
+export interface CommandPanelList
+{
+  records: CommandPanelRecord[];
+  next_cursor: string;
+  is_end: boolean;
+}
+
+export interface CreateCommandPanelRequest
+{
+  scope: CommandPanelRecord['scope'];
+  target_type?: CommandPanelRecord['target_type'];
+  user_openids?: string[];
+  group_openids?: string[];
+  panel: CommandPanel;
+}
+
+export interface UpdateCommandPanelTargetRequest
+{
+  op: 'add' | 'del';
+  user_openids?: string[];
+  group_openids?: string[];
+}
+
+export interface GlobalMenuItem
+{
+  name: string;
+  type: 'switch' | 'send_message' | 'link' | 'menu';
+  sub_menu_items?: Array<{
+    name: string;
+    type: 'send_message' | 'link';
+    send_message?: string;
+    link?: string;
+  }>;
+  send_message?: string;
+  link?: string;
+  switch?: {
+    switch_id: string;
+    default: boolean;
+  };
+  align?: 'left' | 'right';
+}
+
+export interface GlobalMenu
+{
+  items: GlobalMenuItem[];
+}
+
+export interface GlobalMenuRecord
+{
+  version: number;
+  menu?: GlobalMenu;
 }
 
 export enum Opcode

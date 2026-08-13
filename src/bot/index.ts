@@ -8,6 +8,9 @@ import { decodeGroupChannel, decodeGroupGuild, decodeUser } from '../utils';
 import * as AdapterConfig from '../config';
 import * as QQ from '../types';
 import { fromPrivateChannelId, isPrivateChannelId, toPrivateChannelId } from '../channel';
+import { QQStream, StreamOptions } from '../stream-v2';
+import { CommandPanelService, registerCommandPanelModel } from '../command-panel';
+import { registerCommandPanelConsole } from '../console';
 
 interface JoinRequestCache
 {
@@ -31,6 +34,7 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
 
   public guildBot: QQGuildBot<C>;
   public selfOpenid?: string;
+  public commandPanels: CommandPanelService;
 
   internal: GroupInternal;
   http: HTTP;
@@ -59,6 +63,12 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
       parent: this,
     });
     this.internal = new GroupInternal(this, () => this.http);
+    if (config.enableCommandPanel)
+    {
+      registerCommandPanelModel(ctx);
+      this.commandPanels = new CommandPanelService(this);
+      registerCommandPanelConsole(ctx, this);
+    }
     if (config.protocol === 'websocket')
     {
       this.ctx.plugin(WsClient, this as QQBot<C, QQBot.Config & WsClient.Options>);
@@ -74,6 +84,10 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
     if (user.union_openid) this.selfOpenid = user.union_openid;
     if (!this.user) this.user = decodeUser(user);
     else Object.assign(this.user, decodeUser(user));
+    if (this.commandPanels && this.config.commandPanelMode !== 'manual')
+    {
+      await this.commandPanels.sync();
+    }
   }
 
   async stop()
@@ -195,6 +209,11 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
   async createDirectChannel(id: string)
   {
     return { id: toPrivateChannelId(id), type: Universal.Channel.Type.DIRECT };
+  }
+
+  stream(options: StreamOptions)
+  {
+    return new QQStream(this, options);
   }
 
   async getChannel(channelId: string): Promise<Universal.Channel>

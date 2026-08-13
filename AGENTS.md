@@ -1,14 +1,14 @@
-# Fork Maintenance Rules
+# Fork 维护规范
 
-## Branch roles
+## 分支职责
 
-- `main` is a mirror of `upstream/main`. Do not add fork-specific code, documentation, version changes, tags, or npm releases to it.
-- `fork` contains fork-specific features and is the only branch used for npm releases.
-- `origin` is this repository's GitHub fork. `upstream` is `https://github.com/koishi-shangxue-plugins/koishi-plugin-adapter-qq-crack.git`.
+- `main` 是 `upstream/main` 的镜像。不要向其中添加 fork 专属代码、文档、版本变更、标签或 npm 发布记录。
+- `fork` 包含 fork 专属功能，是唯一允许用于 npm 发布的分支。
+- `origin` 指向本仓库的 GitHub fork；`upstream` 指向 `https://github.com/koishi-shangxue-plugins/koishi-plugin-adapter-qq-crack.git`。
 
-## Manual upstream sync
+## 手动同步上游
 
-Before syncing, require a clean working tree. Update `main` manually:
+同步前必须确认工作区干净。手动更新 `main`：
 
 ```powershell
 git switch main
@@ -17,7 +17,7 @@ git reset --hard upstream/main
 git push origin main --force-with-lease
 ```
 
-Then update the release branch and validate it:
+随后更新发布分支并验证：
 
 ```powershell
 git switch fork
@@ -27,20 +27,28 @@ yarn build adapter-qq-crack-vincentzyu-fork
 git push origin fork --force-with-lease
 ```
 
-Resolve rebase conflicts in `fork`; do not merge fork changes into `main`.
+在 `fork` 中解决 rebase 冲突；不要将 fork 的修改合并回 `main`。
 
-## Releases
+## 发布
 
-- Release only from `fork` after a clean build.
-- Update the package version and changelog on `fork`, commit them, create the matching Git tag, then publish to npm.
-- Do not publish from `main`.
+- 仅可在构建通过后的 `fork` 分支发布。
+- 在 `fork` 中更新包版本与变更日志、创建提交、打对应 Git 标签，再发布到 npm。
+- 禁止从 `main` 发布。
 
-## Fork-specific configuration
+## 提交信息
 
-- `autoStreamText` is a bitset with `私聊` and `群聊` options. Its default is `私聊`.
-- The former boolean `autoStreamText` value is intentionally unsupported. Document this manual migration whenever changing the option.
+- 后续提交必须使用 Conventional Commits 格式：`<type>(<scope>): <description>`。
+- `type` 使用英文小写，例如 `feat`、`fix`、`refactor`、`docs`、`test`、`build` 或 `chore`。
+- `scope` 使用英文；冒号后的 `description` 必须使用中文，例如 `feat(stream): 支持按会话类型选择自动流式消息`。
+- 提交标题应按上述规则中英混用；不要使用全中文或全英文的提交标题。
 
-## Build command
+## Fork 专属配置
 
-- This package is part of the Koishi Yarn workspace. Run builds from the workspace root with `yarn build adapter-qq-crack-vincentzyu-fork`.
-- Do not use `npm exec tsc` from this package directory because the workspace contains the upstream checkout with the same package name and npm rejects the duplicate workspace.
+- `autoStreamText` 是包含 `私聊官方V2`、`私聊旧版兼容` 和 `群聊旧版兼容` 的位掩码配置，默认全部关闭；官方 V2 在默认 `normal` 策略下仍保持普通发送。
+- 旧版布尔值 `autoStreamText` 被有意设为不兼容；修改该选项时必须记录手动迁移方式。
+- 指令面板只允许修改 `remark=koishi-adapter-qq-crack:managed` 的托管面板；不可覆盖用户手工创建的面板。
+
+## 构建命令
+
+- 本包属于 Koishi Yarn 工作区。请在工作区根目录运行 `yarn build adapter-qq-crack-vincentzyu-fork`。
+- 不要在本包目录执行 `npm exec tsc`，因为工作区包含同名的上游检出目录，npm 会因重复工作区而拒绝执行。

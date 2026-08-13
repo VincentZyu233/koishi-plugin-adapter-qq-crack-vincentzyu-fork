@@ -30,6 +30,12 @@ export interface BaseConfig extends QQ.Options
   manualAcknowledge: boolean;
   loggerinfo: boolean;
   autoStreamText: number;
+  streamDefaultBehavior: QQ.StreamDefaultBehavior;
+  streamSimulationChunkSize: number;
+  streamSimulationInterval: number;
+  enableCommandPanel: boolean;
+  commandPanelMode: 'manual' | 'alphabetical-first' | 'alphabetical-last' | 'random';
+  commandPanelScopes: Array<'c2c' | 'group'>;
   useMarkdownIfAt: boolean;
   disableUserNamePersist: boolean;
   userInfoApi?: string;
@@ -73,7 +79,13 @@ export const Config: Schema<Config> = Schema.intersect([
     userInfoApi: Schema.string().role("link").default("https://oiapi.net/api/Openid").description("API 接口地址"),
   }).description('进阶设置'),
   Schema.object({
-    autoStreamText: Schema.bitset(QQ.AutoStreamText).description('使用原生 Markdown 流式发送纯文本消息。').default(QQ.AutoStreamText.私聊),
+    autoStreamText: Schema.bitset(QQ.AutoStreamText).description('自动流式消息场景。旧版兼容选项不属于当前公开 API 保证范围。').default(0),
+    streamDefaultBehavior: Schema.union(['normal', 'instant', 'simulate'] as const).description('官方 V2 流式的默认行为。normal 保持普通发送，instant 立即发送生成和结束包，simulate 模拟逐段展示。').default('normal'),
+    streamSimulationChunkSize: Schema.natural().min(1).description('模拟逐段时每段字符数。').default(80),
+    streamSimulationInterval: Schema.natural().min(0).description('模拟逐段时相邻分片间隔，单位毫秒。').default(200),
+    enableCommandPanel: Schema.boolean().description('启用 QQ 指令面板管理与命令同步。').default(false),
+    commandPanelMode: Schema.union(['manual', 'alphabetical-first', 'alphabetical-last', 'random'] as const).description('自动选择 Koishi 指令的方式。manual 由 Console 页面管理。').default('alphabetical-first'),
+    commandPanelScopes: Schema.array(Schema.union(['c2c', 'group'] as const)).role('checkbox').description('自动同步的指令面板场景。').default(['c2c', 'group']),
     useMarkdownIfAt: Schema.boolean().description('在包含 `<at>` 元素时使用 Markdown 格式，禁用将忽略 `<at>` 元素。').default(true),
     loggerinfo: Schema.boolean().default(false).description('调试模式').experimental(),
     disableUserNamePersist: Schema.boolean().default(false).description('禁用将消息中的用户名写入数据库（调试用）。').experimental(),

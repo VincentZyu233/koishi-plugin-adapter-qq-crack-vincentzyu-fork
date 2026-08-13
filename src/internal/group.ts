@@ -7,6 +7,7 @@ declare module './internal' {
   {
     sendMessage(channel_id: string, data: QQ.Message.Request): Promise<QQ.Message.SendResponse>;
     sendPrivateMessage(openid: string, data: QQ.Message.Request): Promise<QQ.Message.SendResponse>;
+    sendStreamMessage(openid: string, data: QQ.StreamMessageRequest): Promise<QQ.StreamMessageResponse>;
     sendFilePrivate(openid: string, data: QQ.Message.File.Request): Promise<any>;
     sendFileGuild(group_openid: string, data: QQ.Message.File.Request): Promise<any>;
     completeUploadPrivate(openid: string, data: QQ.Message.File.CompleteUploadRequest): Promise<QQ.Message.File.Response>;
@@ -40,6 +41,18 @@ declare module './internal' {
     deleteJoinApprovalStrategy(strategy_id: string): Promise<{}>;
     executeJoinApprovalStrategy(strategy_id: string): Promise<{}>;
     modifyJoinApprovalStrategyWhitelist(strategy_id: string, data: QQ.ModifyJoinApprovalStrategyWhitelistRequest): Promise<QQ.ModifyJoinApprovalStrategyWhitelistResponse>;
+    getGlobalMenu(): Promise<QQ.GlobalMenuRecord>;
+    updateGlobalMenu(data: { menu?: QQ.GlobalMenu }): Promise<{ version: number; }>;
+    getCommandPanels(params: {
+      scope: QQ.CommandPanelRecord['scope'];
+      cursor?: string;
+      limit?: number;
+    }): Promise<QQ.CommandPanelList>;
+    createCommandPanel(data: QQ.CreateCommandPanelRequest): Promise<{ panel_id: string; }>;
+    getCommandPanel(panel_id: string): Promise<QQ.CommandPanelRecord>;
+    updateCommandPanel(panel_id: string, data: { panel: QQ.CommandPanel }): Promise<{ version: number; }>;
+    deleteCommandPanel(panel_id: string): Promise<void>;
+    updateCommandPanelTargets(panel_id: string, data: QQ.UpdateCommandPanelTargetRequest): Promise<void>;
   }
 }
 
@@ -52,6 +65,9 @@ GroupInternal.define(false, {
   },
   '/v2/users/{user.id}/messages': {
     POST: 'sendPrivateMessage',
+  },
+  '/v2/users/{user.id}/stream_messages': {
+    POST: 'sendStreamMessage',
   },
   '/v2/users/{user.id}/messages/{message.id}': {
     DELETE: 'deletePrivateMessage',
@@ -109,6 +125,22 @@ GroupInternal.define(false, {
   },
   '/v2/groups/join_approval_strategy/{strategy.id}/whitelist_users': {
     POST: 'modifyJoinApprovalStrategyWhitelist',
+  },
+  '/v2/menu': {
+    GET: 'getGlobalMenu',
+    PUT: 'updateGlobalMenu',
+  },
+  '/v2/panels': {
+    GET: 'getCommandPanels',
+    POST: 'createCommandPanel',
+  },
+  '/v2/panels/{panel.id}': {
+    GET: 'getCommandPanel',
+    PUT: 'updateCommandPanel',
+    DELETE: 'deleteCommandPanel',
+  },
+  '/v2/panels/{panel.id}/target': {
+    PUT: 'updateCommandPanelTargets',
   },
 });
 

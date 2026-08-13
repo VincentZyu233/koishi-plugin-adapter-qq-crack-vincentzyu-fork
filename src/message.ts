@@ -350,9 +350,9 @@ export class QQMessageEncoder<C extends Context = Context> extends MessageEncode
     }
     // 主动发送时可能没有 isDirect，需要同时根据 private: 频道 ID 判断。
     const isDirect = this.session.isDirect || isPrivateChannelId(this.session.channelId);
-    const autoStreamTarget = isDirect ? QQ.AutoStreamText.私聊 : QQ.AutoStreamText.群聊;
-    const autoStreamText = Boolean(
-      (this.bot.config.autoStreamText & autoStreamTarget)
+    const legacyStreamTarget = isDirect ? QQ.AutoStreamText.私聊旧版兼容 : QQ.AutoStreamText.群聊旧版兼容;
+    const autoLegacyStream = Boolean(
+      (this.bot.config.autoStreamText & legacyStreamTarget)
       && !this.customRequest
       && !this.useMarkdown
       && !this.attachedFile
@@ -385,7 +385,7 @@ export class QQMessageEncoder<C extends Context = Context> extends MessageEncode
         };
       }
     }
-    if (autoStreamText)
+    if (autoLegacyStream)
     {
       data.msg_type = QQ.Message.Type.MARKDOWN;
       delete data.content;
@@ -394,7 +394,7 @@ export class QQMessageEncoder<C extends Context = Context> extends MessageEncode
       };
       delete data.keyboard;
     }
-    const shouldAutoStream = this.customAutoStream || autoStreamText;
+    const shouldAutoStream = this.customAutoStream || autoLegacyStream;
     if (!shouldAutoStream && !data.stream)
     {
       clearAutoStream(this.options.session);
@@ -456,7 +456,32 @@ export class QQMessageEncoder<C extends Context = Context> extends MessageEncode
         this.errors.push(createSendError(e));
       }
     };
-    await send();
+    const useV2 = isDirect
+      && Boolean(this.bot.config.autoStreamText & QQ.AutoStreamText.私聊官方V2)
+      && !this.customRequest
+      && !this.useMarkdown
+      && !this.attachedFile
+      && !this.rows.flat().length
+      && this.plainTextOnly
+      && this.content.trim().length
+      && this.bot.config.streamDefaultBehavior !== 'normal';
+    if (useV2)
+    {
+      const response = await this.sendV2Stream(this.content, msg_id, event_id, msg_seq);
+      if (response?.id)
+      {
+        const session = this.bot.session();
+        session.type = 'send';
+        session.guildId = this.session.guildId;
+        session.channelId = this.channelId;
+        session.isDirect = true;
+        session.messageId = response.id;
+        this.results.push(session.event.message);
+        session.app.emit(session, 'send', session);
+      }
+    } else {
+      await send();
+    }
     this.content = '';
     this.attachedFile = null;
     this.rows = [];
@@ -466,6 +491,39 @@ export class QQMessageEncoder<C extends Context = Context> extends MessageEncode
     this.plainTextOnly = true;
     this.reference = null;
     this.retry = false;
+  }
+
+  private async sendV2Stream(content: string, msgId?: string, eventId?: string, msgSeq?: number)
+  {
+    const stream = this.bot.stream({
+      userId: fromPrivateChannelId(this.session.channelId) || this.options.session.userId,
+      msgId,
+      eventId,
+      msgSeq,
+      contentType: 'markdown',
+      inputMode: 'append',
+    });
+    try
+    {
+      if (this.bot.config.streamDefaultBehavior === 'simulate')
+      {
+        const size = this.bot.config.streamSimulationChunkSize;
+        for (let index = 0; index < content.length; index += size)
+        {
+          await stream.write(escapeMarkdown(content.slice(index, index + size)));
+          if (index + size < content.length && this.bot.config.streamSimulationInterval)
+          {
+            await new Promise<void>(resolve => this.bot.ctx.setTimeout(() => resolve(), this.bot.config.streamSimulationInterval));
+          }
+        }
+        return await stream.end();
+      } else {
+        await stream.write(escapeMarkdown(content));
+        return await stream.end();
+      }
+    } catch (error) {
+      this.errors.push(createSendError(error));
+    }
   }
 
   async audit(audit_id: string): Promise<QQ.MessageAudited>

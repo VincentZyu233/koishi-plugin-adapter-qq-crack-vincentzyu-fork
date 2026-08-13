@@ -28,9 +28,23 @@
 - 新增内部 API：入群申请列表与审批、群禁言设置、入群自动审批策略与白名单管理
 - 配置意图位更新为 `GROUP_AND_C2C_EVENT`，覆盖入群申请与群消息接收相关事件
 
-## 自动流式消息配置迁移
+## 流式消息与指令面板
 
-`autoStreamText` 现为“私聊”和“群聊”两个选项组成的多选配置，默认仅启用私聊。旧版布尔值 `true` 或 `false` 不再兼容；升级后请在 Koishi 控制台重新选择需要启用自动原生 Markdown 流式发送的会话类型。
+`autoStreamText` 现为三个多选项：`私聊官方V2`、`私聊旧版兼容`、`群聊旧版兼容`，默认全部关闭。旧版布尔值不兼容，升级后请在 Koishi 控制台重新选择。官方 V2 只支持单聊；全局默认策略为普通发送，可改为立即完成或模拟逐段展示。
+
+业务插件可绕过全局开关，直接使用 V2 流式会话：
+
+```ts
+const stream = (session.bot as QQBot).stream({
+  userId: session.userId,
+  msgId: session.messageId,
+})
+await stream.write('正在生成……')
+await stream.write('这是下一段内容。')
+await stream.end()
+```
+
+启用 `enableCommandPanel` 后，插件会同步顶层且 `slash=true` 的 Koishi 指令到 QQ 指令面板，并在 Console 插件详情页提供手动选择、同步与单聊全局菜单编辑。仅带本插件专属标记的面板会被更新，手工创建的 QQ 面板不会被修改。
 
 ## 使用示例
 

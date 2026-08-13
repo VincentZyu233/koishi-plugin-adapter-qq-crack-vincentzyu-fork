@@ -16,3 +16,7 @@ tsconfig.tsbuildinfo
 *.sln
 .yarn
 docs
+!docs/
+!docs/dev/
+!docs/dev/20260813.补齐最近qq更新的很多api捏/
+!docs/dev/20260813.补齐最近qq更新的很多api捏/20260813.补齐最近qq更新的很多api捏.md
