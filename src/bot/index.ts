@@ -62,11 +62,7 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
       parent: this,
     });
     this.internal = new GroupInternal(this, () => this.http);
-    if (config.enableCommandPanel)
-    {
-      registerCommandPanelModel(ctx);
-      this.commandPanels = new CommandPanelService(this);
-    }
+    if (config.enableCommandPanel !== false) this.ensureCommandPanelService();
     if (config.protocol === 'websocket')
     {
       this.ctx.plugin(WsClient, this as QQBot<C, QQBot.Config & WsClient.Options>);
@@ -212,6 +208,14 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
   stream(options: StreamOptions)
   {
     return new QQStream(this, options);
+  }
+
+  ensureCommandPanelService()
+  {
+    if (this.config.enableCommandPanel === false) return;
+    if (this.commandPanels) return this.commandPanels;
+    registerCommandPanelModel(this.ctx);
+    return this.commandPanels = new CommandPanelService(this);
   }
 
   async getChannel(channelId: string): Promise<Universal.Channel>

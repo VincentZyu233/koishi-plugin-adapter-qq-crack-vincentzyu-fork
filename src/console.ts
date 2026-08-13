@@ -24,7 +24,9 @@ export function registerCommandPanelConsole(ctx: Context) {
     })
     const findBot = (botId: string) => {
       const candidate = ctx.bots.find((bot: QQBot) => bot.platform === 'qq' && bot.config?.id === botId) as QQBot | undefined
-      if (!candidate?.commandPanels) throw new Error('找不到已启用指令面板的 QQ 机器人')
+      if (!candidate) throw new Error('找不到指定的 QQ 机器人')
+      candidate.ensureCommandPanelService()
+      if (!candidate.commandPanels) throw new Error('该 QQ 机器人的 enableCommandPanel 已显式关闭')
       return candidate
     }
     ctx.console.addListener('qq-crack/panel-bots', async () => {
@@ -33,7 +35,7 @@ export function registerCommandPanelConsole(ctx: Context) {
         .map((candidate: QQBot) => ({
           id: candidate.config.id,
           name: candidate.user?.name || `QQ Bot ${candidate.config.id}`,
-          enabled: Boolean(candidate.commandPanels),
+          enabled: candidate.config.enableCommandPanel !== false,
         }))
     }, { authority: 3 })
     ctx.console.addListener('qq-crack/panel-state', async ({ botId }) => {
