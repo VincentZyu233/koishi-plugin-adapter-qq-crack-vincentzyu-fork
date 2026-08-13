@@ -7,7 +7,8 @@ import type * as QQ from './types'
 export interface PanelState {
   preference: CommandPanelPreference
   commands: PanelCommand[]
-  menu: QQ.GlobalMenuRecord
+  menu?: QQ.GlobalMenuRecord
+  menuError?: string
   mode: string
 }
 
@@ -22,21 +23,33 @@ export function registerCommandPanelConsole(ctx: Context) {
       prod: resolve(__dirname, '../dist'),
     })
     const findBot = (botId: string) => {
-      const candidate = ctx.bots[botId] as QQBot | undefined
+      const candidate = ctx.bots.find((bot: QQBot) => bot.platform === 'qq' && bot.config?.id === botId) as QQBot | undefined
       if (!candidate?.commandPanels) throw new Error('找不到已启用指令面板的 QQ 机器人')
       return candidate
     }
     ctx.console.addListener('qq-crack/panel-bots', async () => {
-      return (Object.values(ctx.bots) as QQBot[])
-        .filter(candidate => candidate.platform === 'qq' && Boolean(candidate.commandPanels))
-        .map(candidate => ({ id: candidate.selfId, name: candidate.user?.name || candidate.selfId }))
+      return ctx.bots
+        .filter((candidate: QQBot) => candidate.platform === 'qq')
+        .map((candidate: QQBot) => ({
+          id: candidate.config.id,
+          name: candidate.user?.name || `QQ Bot ${candidate.config.id}`,
+          enabled: Boolean(candidate.commandPanels),
+        }))
     }, { authority: 3 })
     ctx.console.addListener('qq-crack/panel-state', async ({ botId }) => {
       const target = findBot(botId)
+      let menu: QQ.GlobalMenuRecord | undefined
+      let menuError: string | undefined
+      try {
+        menu = await target.commandPanels.getMenu()
+      } catch (error) {
+        menuError = error instanceof Error ? error.message : String(error)
+      }
       return {
         preference: await target.commandPanels.getPreference(),
         commands: await target.commandPanels.preview(),
-        menu: await target.commandPanels.getMenu(),
+        menu,
+        menuError,
         mode: target.config.commandPanelMode,
       }
     }, { authority: 3 })

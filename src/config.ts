@@ -83,7 +83,7 @@ export const Config: Schema<Config> = Schema.intersect([
     streamDefaultBehavior: Schema.union(['normal', 'instant', 'simulate'] as const).description('官方 V2 流式的默认行为。normal 保持普通发送，instant 立即发送生成和结束包，simulate 模拟逐段展示。').default('normal'),
     streamSimulationChunkSize: Schema.natural().min(1).description('模拟逐段时每段字符数。').default(80),
     streamSimulationInterval: Schema.natural().min(0).description('模拟逐段时相邻分片间隔，单位毫秒。').default(200),
-    enableCommandPanel: Schema.boolean().description('启用 QQ 指令面板管理与命令同步。').default(false),
+    enableCommandPanel: Schema.boolean().description('启用 QQ 指令面板管理与命令同步。关闭后仍保留 Console 页面，但不会创建数据库记录或调用面板 API。').default(true),
     commandPanelMode: Schema.union(['manual', 'alphabetical-first', 'alphabetical-last', 'random'] as const).description('自动选择 Koishi 指令的方式。manual 由 Console 页面管理。').default('manual'),
     commandPanelScopes: Schema.array(Schema.union(['c2c', 'group'] as const)).role('checkbox').description('自动同步的指令面板场景。').default(['c2c', 'group']),
     useMarkdownIfAt: Schema.boolean().description('在包含 `<at>` 元素时使用 Markdown 格式，禁用将忽略 `<at>` 元素。').default(true),

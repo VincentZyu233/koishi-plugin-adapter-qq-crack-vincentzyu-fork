@@ -64,6 +64,10 @@ export class CommandPanelService {
 
   constructor(private bot: QQBot) {}
 
+  get botId() {
+    return this.bot.config.id
+  }
+
   async preview(): Promise<PanelCommand[]> {
     const candidates = getCandidates(this.bot)
     const valid = candidates.filter(command => !command.reason)
@@ -95,15 +99,15 @@ export class CommandPanelService {
   }
 
   async getPreference(): Promise<CommandPanelPreference> {
-    const [preference] = await this.bot.ctx.database.get('qq_command_panel', { botId: this.bot.selfId })
-    return preference ?? { id: 0, botId: this.bot.selfId, commands: [], scopes: this.bot.config.commandPanelScopes }
+    const [preference] = await this.bot.ctx.database.get('qq_command_panel', { botId: this.botId })
+    return preference ?? { id: 0, botId: this.botId, commands: [], scopes: this.bot.config.commandPanelScopes }
   }
 
   async savePreference(commands: string[], scopes: Array<'c2c' | 'group'>) {
     const allowed = new Set(getCandidates(this.bot).map(command => command.name))
     const unique = [...new Set(commands)].filter(name => allowed.has(name)).slice(0, 20)
-    const [existing] = await this.bot.ctx.database.get('qq_command_panel', { botId: this.bot.selfId })
-    const data = { botId: this.bot.selfId, commands: unique, scopes }
+    const [existing] = await this.bot.ctx.database.get('qq_command_panel', { botId: this.botId })
+    const data = { botId: this.botId, commands: unique, scopes }
     if (existing) await this.bot.ctx.database.set('qq_command_panel', { id: existing.id }, data)
     else await this.bot.ctx.database.create('qq_command_panel', data)
   }

@@ -44,7 +44,7 @@ await stream.write('这是下一段内容。')
 await stream.end()
 ```
 
-启用 `enableCommandPanel` 后，插件会同步顶层且 `slash=true` 的 Koishi 指令到 QQ 指令面板，并在 Console 插件详情页提供手动选择、同步与单聊全局菜单编辑。仅带本插件专属标记的面板会被更新，手工创建的 QQ 面板不会被修改。
+`enableCommandPanel` 默认开启。插件可将顶层且 `slash=true` 的 Koishi 指令同步到 QQ 指令面板，并在 Console 左侧“QQ 指令面板”页面提供手动选择、同步与单聊全局菜单编辑。仅带本插件专属标记的面板会被更新，手工创建的 QQ 面板不会被修改。
 
 ## 使用示例
 

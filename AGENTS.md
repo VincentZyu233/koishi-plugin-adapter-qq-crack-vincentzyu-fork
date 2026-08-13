@@ -47,6 +47,7 @@ git push origin fork --force-with-lease
 - `autoStreamText` 是包含 `私聊官方V2`、`私聊旧版兼容` 和 `群聊旧版兼容` 的位掩码配置，默认只启用 `私聊官方V2`；官方 V2 在默认 `normal` 策略下仍保持普通发送。
 - 旧版布尔值 `autoStreamText` 被有意设为不兼容；修改该选项时必须记录手动迁移方式。
 - 指令面板只允许修改 `remark=koishi-adapter-qq-crack:managed` 的托管面板；不可覆盖用户手工创建的面板。
+- `enableCommandPanel` 默认开启，`commandPanelMode` 默认使用 `manual`；Console 左侧页面始终注册。
 
 ## 构建命令
 
