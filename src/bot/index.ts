@@ -10,7 +10,6 @@ import * as QQ from '../types';
 import { fromPrivateChannelId, isPrivateChannelId, toPrivateChannelId } from '../channel';
 import { QQStream, StreamOptions } from '../stream-v2';
 import { CommandPanelService, registerCommandPanelModel } from '../command-panel';
-import { registerCommandPanelConsole } from '../console';
 
 interface JoinRequestCache
 {
@@ -67,7 +66,6 @@ export class QQBot<C extends Context = Context, T extends QQBot.Config = QQBot.C
     {
       registerCommandPanelModel(ctx);
       this.commandPanels = new CommandPanelService(this);
-      registerCommandPanelConsole(ctx, this);
     }
     if (config.protocol === 'websocket')
     {

@@ -13,7 +13,7 @@ export interface PanelState {
 
 const registered = new WeakSet<Context>()
 
-export function registerCommandPanelConsole(ctx: Context, bot: QQBot) {
+export function registerCommandPanelConsole(ctx: Context) {
   if (registered.has(ctx)) return
   registered.add(ctx)
   ctx.inject(['console'], (ctx: any) => {

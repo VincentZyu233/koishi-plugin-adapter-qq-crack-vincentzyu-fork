@@ -7,6 +7,7 @@
     <label class="field">机器人
       <select v-model="botId" @change="load"><option v-for="bot in bots" :key="bot.id" :value="bot.id">{{ bot.name }} / {{ bot.id }}</option></select>
     </label>
+    <k-comment v-if="!loading && !bots.length" type="warning">没有已启用指令面板的 QQ 机器人。请在该适配器实例配置中开启 enableCommandPanel，然后重载插件。</k-comment>
     <p v-if="state" class="hint">当前模式：{{ state.mode }}。自动模式的勾选由配置生成；手动模式可在此保存选择。</p>
     <div v-if="state" class="commands">
       <label v-for="command in state.commands" :key="command.name" class="command" :class="{ invalid: command.reason }">
@@ -57,7 +58,15 @@ async function saveMenu() {
     message.value = { ok: false, text: error instanceof Error ? error.message : String(error) }
   }
 }
-onMounted(async () => { bots.value = await send('qq-crack/panel-bots' as any); botId.value = bots.value[0]?.id || ''; await load() })
+onMounted(async () => {
+  try {
+    bots.value = await send('qq-crack/panel-bots' as any)
+    botId.value = bots.value[0]?.id || ''
+    await load()
+  } catch (error) {
+    message.value = { ok: false, text: error instanceof Error ? error.message : String(error) }
+  }
+})
 </script>
 
 <style lang="scss" scoped>

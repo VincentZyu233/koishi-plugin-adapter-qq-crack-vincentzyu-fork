@@ -2,5 +2,11 @@ import type { Context } from '@koishijs/client'
 import PanelSettings from './settings.vue'
 
 export default (ctx: Context) => {
-  ctx.slot({ type: 'plugin-details', component: PanelSettings, order: 0 })
+  ctx.page({
+    name: 'QQ 指令面板',
+    path: '/qq-command-panel',
+    component: PanelSettings,
+    icon: 'list',
+    order: 420,
+  })
 }

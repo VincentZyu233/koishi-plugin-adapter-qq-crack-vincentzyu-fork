@@ -2,6 +2,7 @@ import { Context, Session } from 'koishi';
 import * as QQ from './types';
 import { QQBot } from './bot';
 import { GroupInternal, GuildInternal } from './internal';
+import { registerCommandPanelConsole } from './console';
 
 export { QQ };
 
@@ -21,6 +22,8 @@ export const Config = QQBot.Config;
 
 export function apply(ctx: Context, config: QQBot.Config)
 {
+  // 独立页面始终注册；未启用面板的机器人会在页面中提示配置条件。
+  registerCommandPanelConsole(ctx);
   return new QQBot(ctx, config);
 }
 
